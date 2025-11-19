@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vigenère Cipher — Cipher Forge</title>
+<meta name="description" content="Vigenère cipher tool. Provide a key to encrypt/decrypt alphabetic text. Standalone page." />
+<style>
+ :root{--bg:#0b0b0b;--panel:#121212;--accent:#4caf50}
+ body{margin:0;background:var(--bg);color:#eaeaea;font-family:Inter,Arial;display:flex;align-items:center;justify-content:center;padding:24px}
+ .card{max-width:900px;padding:22px;width:100%;border-radius:12px;background:linear-gradient(#0f0f0f,#111)}
+ textarea,input{width:100%;padding:12px;border-radius:8px;border:1px solid #222;background:var(--panel);color:#eaeaea}
+ .row{display:flex;gap:8px;margin-top:12px}
+ .btn{padding:10px 14px;border-radius:8px;border:0;background:var(--accent);cursor:pointer;color:#fff}
+ .output{margin-top:12px;padding:12px;background:#070707;border-radius:8px;min-height:74px;white-space:pre-wrap}
+ .small{color:#9aa0a6;margin-top:8px}
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>Vigenère Cipher</h1>
+    <p class="small">Classic polyalphabetic cipher. Use a key (letters only). Non-letters are preserved.</p>
+    <textarea id="v_input" placeholder="Enter plaintext or ciphertext"></textarea>
+    <div style="margin-top:8px">
+      <input id="v_key" placeholder="Key (letters only)" />
+    </div>
+    <div class="row">
+      <button class="btn" id="v_enc">Encrypt</button>
+      <button class="btn" id="v_dec">Decrypt</button>
+      <button class="btn" id="v_clear" style="background:#2b2b2b">Clear</button>
+    </div>
+    <div id="v_output" class="output"></div>
+    <div style="margin-top:10px"><button class="btn" id="v_copy">Copy Output</button></div>
+  </main>
+
+<script>
+(() => {
+  const inp = document.getElementById('v_input'), keyEl = document.getElementById('v_key'), out = document.getElementById('v_output');
+
+  function sanitizeKey(k){ return (k||'').replace(/[^A-Za-z]/g,'').toUpperCase(); }
+  function vigenereProcess(text, key, decrypt=false){
+    key = sanitizeKey(key);
+    if(!key) return 'Enter a key (letters only)';
+    let j=0;
+    return text.split('').map(ch=>{
+      if(!/[A-Za-z]/.test(ch)) return ch;
+      const base = (ch === ch.toUpperCase()) ? 65 : 97;
+      const tVal = ch.toUpperCase().charCodeAt(0) - 65;
+      const kVal = key.charCodeAt(j % key.length) - 65;
+      j++;
+      const res = decrypt ? (tVal - kVal + 26) % 26 : (tVal + kVal) % 26;
+      return String.fromCharCode(base + res);
+    }).join('');
+  }
+
+  document.getElementById('v_enc').addEventListener('click', ()=> out.textContent = vigenereProcess(inp.value, keyEl.value, false));
+  document.getElementById('v_dec').addEventListener('click', ()=> out.textContent = vigenereProcess(inp.value, keyEl.value, true));
+  document.getElementById('v_copy').addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText(out.textContent); document.getElementById('v_copy').textContent='Copied ✓'; setTimeout(()=>document.getElementById('v_copy').textContent='Copy Output',900);}catch(e){}});
+  document.getElementById('v_clear').addEventListener('click', ()=>{ inp.value=''; keyEl.value=''; out.textContent=''; });
+})();
+</script>
+</body></html>
